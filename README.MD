@@ -13,11 +13,11 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | Endpoint | Method | Description | Success Result |
 | --- | --- | --- | --- |
 | `/user/` | POST | Create a user | Tokens |
-| `/user/` | GET | Returns a list of the users in the database | User |
-| `/user/<id>` | GET | Returns a single user | User list |
-| `/user/me` | GET | Request current user information via access token | User | 
+| `/user/` | GET | Get a list of all users | User |
+| `/user/<id>` | GET | Get a single user | User list |
+| `/user/me` | GET | Get current user information via access token | User | 
 | `/auth/login` | POST | Login a user via "username" and "password" in the payload body. | Tokens |
-| `/auth/refresh` | GET | Request new tokens by sending a refresh token | Tokens |
+| `/auth/refresh` | GET | Request new tokens via refresh token | Tokens |
 | `/auth/check` | GET | Check access token authentication status. | `{authStatus: Bool, exp: Float }` |
 
 All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header. Responses are given in the body.
