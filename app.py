@@ -141,8 +141,9 @@ def get_me():
     user_agent = request.headers['User-Agent']
     session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
     user = session.user
-    if user_agent == session.agent:
+    if user_agent == session.agent and session.access_expiration > time.time():
         return user_schema.jsonify(user)
+    return Response(status=401)
 
 # Update User
 @app.route('/user/<id>', methods=['PUT'])
