@@ -37,6 +37,7 @@ class User(db.Model):
         self.username = username
         self.email = email
         self.password = password
+        self.admin = admin
     
     def __repr__(self):
         return f'<User "{self.username}>'
@@ -81,7 +82,7 @@ class SessionSchema(ma.Schema):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'username', 'email')
+        fields = ('id', 'username', 'email', 'admin')
 
 class AuthCheckSchema(ma.Schema):
     def __init__(self, authState, exp=None):
@@ -166,10 +167,14 @@ def update_user(id):
 @app.route('/user/<id>', methods=['DELETE'])
 def delete_user(id):
     user = User.query.get(id)
-    db.session.delete(user)
-    db.session.commit()
-    
-    return user_schema.jsonify(user)
+    access_token = request.headers['Authorization']
+    user_agent = request.headers['User-Agent']
+    session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
+    if session.user.admin == True or (session.user.username == user.username and session.agent == user_agent):
+        db.session.delete(user)
+        db.session.commit()
+        return user_schema.jsonify(user)
+    return Response(status=401)
 
 ## Auth
 
@@ -247,9 +252,17 @@ def check_auth():
 
     return jsonify({"auth":loginStatus, "exp":expiration or None})
 
+def createAdminAccount():
+    email = 'admin@example.com'
+    password = 'dbAdmin'
+    username = 'admin'
+    hashedPass = hashlib.sha256(password.encode('utf-8')).hexdigest()
+    adminUser = User(username=username, password=hashedPass, email=email, admin=True)
+    db.session.add(adminUser)
+    db.session.commit()
+
 # Run Server
 if __name__ == '__main__':
     with app.app_context():
-        # db.drop_all()
         db.create_all()
         app.run(debug=True)
