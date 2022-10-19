@@ -134,6 +134,16 @@ def get_user(id):
     user = User.query.get(id)
     return user_schema.jsonify(user)
 
+# Get Me
+@app.route('/user/me', methods=['GET'])
+def get_me():
+    access_token = request.headers['Authorization']
+    user_agent = request.headers['User-Agent']
+    session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
+    user = session.user
+    if user_agent == session.agent:
+        return user_schema.jsonify(user)
+
 # Update User
 @app.route('/user/<id>', methods=['PUT'])
 def update_user(id):
