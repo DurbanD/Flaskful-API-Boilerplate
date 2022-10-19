@@ -16,8 +16,8 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | `/user/` | GET | Returns a list of the users in the database | User |
 | `/user/<id>` | GET | Returns a single user | User list |
 | `/auth/login` | POST | Login a user via "username" and "password" in the payload body. | Tokens |
-| `/auth/refresh` | GET | Refresh Authorization | Tokens |
-| `/auth/check` | GET | Check authorization | `{authStatus: Bool, exp: Float }` |
+| `/auth/refresh` | GET | Request new tokens by sending a refresh token | Tokens |
+| `/auth/check` | GET | Check access token authentication status. | `{authStatus: Bool, exp: Float }` |
 
 All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header. Responses are given in the body.
 
