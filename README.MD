@@ -10,7 +10,7 @@ This is a template for use in creating a Flask based RESTful API with user accou
 
 ## Endpoints
 
-| Endpoint | Method | Description | Success Result
+| Endpoint | Method | Description | Success Result |
 | --- | --- | --- |
 | `/user/` | POST | Create a user | Tokens |
 | `/user/` | GET | Returns a list of the users in the database | User |
