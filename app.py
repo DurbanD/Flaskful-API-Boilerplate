@@ -25,8 +25,8 @@ ma = Marshmallow(app)
 class User(db.Model):
     __tablename__= "user"
     
-    # id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True)
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(256))
     admin = db.Column(db.Boolean)
@@ -140,7 +140,7 @@ def get_user(id):
 def get_me():
     access_token = request.headers['Authorization']
     user_agent = request.headers['User-Agent']
-    session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
+    session = Session.query.filter_by(access_token=access_token).first()
     user = session.user
     if session.access_expiration > time.time():
         if user_agent == session.agent:
@@ -153,16 +153,30 @@ def get_me():
 @app.route('/user/<id>', methods=['PUT'])
 def update_user(id):
     user = User.query.get(id)
-    
-    email = request.json['email'] or User.email
-    password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest() or User.password
-    username = request.json['username'] or User.username
     access_token = request.headers['Authorization']
     user_agent = request.headers['User-Agent']
     session = Session.query.filter_by(access_token=access_token).first()
+    
+    # Check for updated keys. If no update is passed, use current information
+    try:
+        email = request.json['email']
+    except KeyError:
+        email = User.email
+    try:
+        password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+    except KeyError:
+        password = User.password
+    try:
+        username = request.json['username']
+    except KeyError:
+        username = User.username
+
+    # Set the New Information
     user.email = email
     user.password = password
     user.username = username
+    
+    # Check token authentication before committing changes
     if session.access_expiration > time.time():
         if user_agent == session.agent and user.username == session.user_id:
             db.session.commit()
@@ -195,7 +209,7 @@ def login():
     username = request.json['username']
     password = request.json['password']
     agent = request.headers['User-Agent']
-    user = User.query.get(username)
+    user = User.query.filter_by(username=username).first()
     hashedPass = hashlib.sha256(password.encode('utf-8')).hexdigest()
     
     #Login Successful
@@ -275,5 +289,7 @@ def createAdminAccount():
 # Run Server
 if __name__ == '__main__':
     with app.app_context():
+        # db.drop_all()
         db.create_all()
+        # createAdminAccount()
         app.run(debug=True)
