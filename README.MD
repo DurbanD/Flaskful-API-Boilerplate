@@ -20,7 +20,7 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | `/auth/refresh` | GET | Request new tokens | Authorization (refresh); User-Agent | Tokens |
 | `/auth/check` | GET | Check access token status | Authorization (access); User-Agent | `{authStatus: Bool, exp: Float }` |
 
-All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header. Responses are given in the body.
+All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header.
 
 ## Authentication and Security
 Authentication is based on Auth0, using **bearer** access and refresh tokens while keeping a record of what User Agent the tokens were generated for. If a different user agent than the one used to create the session attempts to use that session's refresh key, the session will be deleted forcing that user agent to log in again to recieve new tokens. Access tokens are used to request any protected information, and quickly time out; Refresh tokens are used to generate new tokens.
