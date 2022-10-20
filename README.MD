@@ -13,12 +13,12 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | Endpoint | Method | Description | Req. Headers | Result |
 | --- | --- | --- | --- | --- |
 | `/user/` | POST | Create a user | | Tokens |
-| `/user/` | GET | Get a list of all users. Requires admin access token | Authorization (admin access) | User |
+| `/user/` | GET | Get a list of all users | Authorization (admin access) | User |
 | `/user/<id>` | GET | Get a single user | Authorization (access); User-Agent | User list |
-| `/user/me` | GET | Get current user information via access token | Authorization (access); User-Agent | User | 
-| `/auth/login` | POST | Login a user via "username" and "password" in the payload body. | User-Agent | Tokens |
-| `/auth/refresh` | GET | Request new tokens via refresh token | Authorization (refresh); User-Agent | Tokens |
-| `/auth/check` | GET | Check access token authentication status. | Authorization (access); User-Agent | `{authStatus: Bool, exp: Float }` |
+| `/user/me` | GET | Get current user information | Authorization (access); User-Agent | User | 
+| `/auth/login` | POST | Login. Req "username" and "password" in payload | User-Agent | Tokens |
+| `/auth/refresh` | GET | Request new tokens | Authorization (refresh); User-Agent | Tokens |
+| `/auth/check` | GET | Check access token status | Authorization (access); User-Agent | `{authStatus: Bool, exp: Float }` |
 
 All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header. Responses are given in the body.
 
