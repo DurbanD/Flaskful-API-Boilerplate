@@ -1,4 +1,5 @@
 import json
+from types import NoneType
 from flask import Flask, request, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -58,8 +59,9 @@ class Session(db.Model):
     refresh_token = db.Column(db.String, unique = True)
     refresh_expiration = db.Column(db.Float)
     
-    def __init__(self):
+    def __init__(self, agent):
         self.generateTokens()
+        self.agent = agent
     def generateTokens(self):
         issued = time.time()
         sessionToken = secrets.token_hex(256)
@@ -98,21 +100,24 @@ sessions_schema = SessionSchema(many=True)
 # Create User
 @app.route('/user', methods=['POST'])
 def add_user():
-    email = request.json['email']
+    try:
+        email = request.json['email']
+        username = request.json['username']
+        userAgent = request.headers['User-Agent']
+        hashedPass = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+    except:
+        return Response(status=400)
     if validate(email) == False:
         return Response(status=400)
-    username = request.json['username']
-    userAgent = request.headers['User-Agent']
-    # Hash the password with sha256
-    hashedPass = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+    
     # Create the User
     new_user = User(username=username, password=hashedPass, email=email)
     
     # Create New Session and Set Information
-    new_session = Session()
-    new_session.agent = userAgent
+    new_session = Session(userAgent)
     new_session.user = new_user
     
+    # Make the Changes
     db.session.add(new_user)
     db.session.add(new_session)
     db.session.commit()
@@ -224,6 +229,10 @@ def delete_user(id):
         db.session.commit()
         return Response(status=401)
     
+    # Delete all user sessions
+    for session in user.auth:
+        db.session.delete(session)
+    # Delete the user
     db.session.delete(user)
     db.session.commit()
     return user_schema.jsonify(user)
@@ -237,13 +246,14 @@ def login():
         username = request.json['username']
         hashedPass = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
         agent = request.headers['User-Agent']
+        user = User.query.filter_by(username=username).first()
     except:
         return Response(status=400)
-    user = User.query.filter_by(username=username).first()
+    if type(user) == NoneType:
+        return Response(status=404)
     
-    #Login Successful
+    # Check Password
     if hashedPass == user.password:
-        
         ## If the current user agent matches an existing session, use that session
         for session in user.auth:
             if session.agent == agent:
@@ -252,9 +262,9 @@ def login():
                 return session_schema.jsonify(session)
         
         # Otherwise, generate a new session
-        newSession = Session()
+        newSession = Session(agent)
         newSession.user = user
-        newSession.agent = agent
+        
         db.session.commit()
         return session_schema.jsonify(newSession)
     else:
@@ -323,5 +333,5 @@ if __name__ == '__main__':
     with app.app_context():
         # db.drop_all()
         db.create_all()
-        # createAdminAccount()
+        # createDefaultAdminAccount()
         app.run(debug=True)
