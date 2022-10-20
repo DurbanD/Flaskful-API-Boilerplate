@@ -6,6 +6,7 @@ import hashlib
 import os
 import time
 import secrets
+from Tools.emailValidator import validate
 
 # Init app
 app = Flask(__name__)
@@ -61,11 +62,11 @@ class Session(db.Model):
         self.generateTokens()
     def generateTokens(self):
         issued = time.time()
-        
         sessionToken = secrets.token_hex(256)
+        refreshToken = secrets.token_hex(256)
+        
         session_exp = time.time() + 300
         # 300 seconds is 5 minutes
-        refreshToken = secrets.token_hex(256)
         refresh_exp = time.time() + 259200
         # 2592000 seconds is 30 days
         
@@ -84,12 +85,6 @@ class UserSchema(ma.Schema):
     class Meta:
         fields = ('id', 'username', 'email', 'admin')
 
-class AuthCheckSchema(ma.Schema):
-    def __init__(self, authState, exp=None):
-        self.auth = authState
-        if (exp): 
-            self.exp = exp
-
         
 #Init Schema
 user_schema = UserSchema()
@@ -104,11 +99,13 @@ sessions_schema = SessionSchema(many=True)
 @app.route('/user', methods=['POST'])
 def add_user():
     email = request.json['email']
-    password = request.json['password']
+    if validate(email) == False:
+        return Response(status=400)
     username = request.json['username']
     userAgent = request.headers['User-Agent']
-    hashedPass = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    # Create New User
+    # Hash the password with sha256
+    hashedPass = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+    # Create the User
     new_user = User(username=username, password=hashedPass, email=email)
     
     # Create New Session and Set Information
@@ -148,25 +145,28 @@ def get_user(id):
 # Get Me
 @app.route('/user/me', methods=['GET'])
 def get_me():
-    access_token = request.headers['Authorization']
-    user_agent = request.headers['User-Agent']
-    session = Session.query.filter_by(access_token=access_token).first()
-    user = session.user
+    try:
+        access_token = request.headers['Authorization']
+        user_agent = request.headers['User-Agent']
+        session = Session.query.filter_by(access_token=access_token).first()
+    except:
+        return Response(status=400)
+    
     if session.access_expiration > time.time():
         if user_agent == session.agent:
-            return user_schema.jsonify(user)
-        if session.user.admin:
-            return user_schema.jsonify(user)
+            return user_schema.jsonify(session.user)
     return Response(status=401)
 
 # Update User
 @app.route('/user/<id>', methods=['PUT'])
 def update_user(id):
-    user = User.query.get(id)
-    access_token = request.headers['Authorization']
-    user_agent = request.headers['User-Agent']
-    session = Session.query.filter_by(access_token=access_token).first()
-    
+    try:
+        user = User.query.get(id)
+        access_token = request.headers['Authorization']
+        user_agent = request.headers['User-Agent']
+        session = Session.query.filter_by(access_token=access_token).first()
+    except:
+        return Response(status=400)
     # Return 401 if the key does not belong to either the user or an admin account
     if (session.user.id != user.id and session.user.admin == False):
         return Response(status=401)
@@ -175,15 +175,15 @@ def update_user(id):
     try:
         email = request.json['email']
     except KeyError:
-        email = User.email
+        email = user.email
     try:
         password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
     except KeyError:
-        password = User.password
+        password = user.password
     try:
         username = request.json['username']
     except KeyError:
-        username = User.username
+        username = user.username
 
     # Set the New Information
     user.email = email
@@ -194,7 +194,7 @@ def update_user(id):
     if session.access_expiration > time.time():
         if user_agent == session.agent and user.username == session.user_id:
             db.session.commit()
-        if session.user.admin:
+        elif session.user.admin:
             db.session.commit()
         return user_schema.jsonify(user)
     else: 
@@ -204,10 +204,13 @@ def update_user(id):
 # Delete User
 @app.route('/user/<id>', methods=['DELETE'])
 def delete_user(id):
-    user = User.query.get(id)
-    access_token = request.headers['Authorization']
-    user_agent = request.headers['User-Agent']
-    session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
+    try:
+        user = User.query.get(id)
+        access_token = request.headers['Authorization']
+        user_agent = request.headers['User-Agent']
+        session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
+    except:
+        return Response(status=400)
     
     # Return 401 if the key does not belong to either the user or an admin account
     if (session.user.id != user.id and session.user.admin == False):
@@ -220,6 +223,7 @@ def delete_user(id):
         db.session.delete(session)
         db.session.commit()
         return Response(status=401)
+    
     db.session.delete(user)
     db.session.commit()
     return user_schema.jsonify(user)
@@ -229,11 +233,13 @@ def delete_user(id):
 # Login
 @app.route('/auth/login', methods=['POST'])
 def login():
-    username = request.json['username']
-    password = request.json['password']
-    agent = request.headers['User-Agent']
+    try:
+        username = request.json['username']
+        hashedPass = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+        agent = request.headers['User-Agent']
+    except:
+        return Response(status=400)
     user = User.query.filter_by(username=username).first()
-    hashedPass = hashlib.sha256(password.encode('utf-8')).hexdigest()
     
     #Login Successful
     if hashedPass == user.password:
@@ -257,8 +263,11 @@ def login():
 # Refresh
 @app.route('/auth/refresh', methods=['GET'])
 def refresh():
-    refreshToken = request.headers['Authorization']
-    agent = request.headers['User-Agent']
+    try:
+        refreshToken = request.headers['Authorization']
+        agent = request.headers['User-Agent']
+    except:
+        return Response(status=400)
     userSession = db.one_or_404(db.select(Session).filter_by(refresh_token=refreshToken))
     
     # Check to see if the refresh token has expired
@@ -280,23 +289,23 @@ def refresh():
 # Check
 @app.route('/auth/check', methods=['GET'])
 def check_auth():
-    accessToken = request.headers['Authorization']
-    agent = request.headers['User-Agent']
+    try:
+        accessToken = request.headers['Authorization']
+        agent = request.headers['User-Agent']
+    except:
+        return Response(status=400)
     userSession = db.one_or_404(db.select(Session).filter_by(access_token=accessToken))
     expiration = userSession.access_expiration
     loginStatus = False
     
-    # Check Access Token Expiration
+    # If the user agent does not match, delete the session
+    if userSession.agent != agent:
+        db.session.delete(userSession)
+        db.session.commit()
+    
+    # Check Access Token Expiration and verify login status if valid
     if time.time() < expiration:
-        
-        # If Token is still active, verify the user agent
-        # If the user agent does not match, delete the session
-        if userSession.agent != agent:
-            db.session.delete(userSession)
-            db.session.commit()
-            
-        else: 
-            loginStatus = True
+        loginStatus = True
 
     return jsonify({"auth":loginStatus, "exp":expiration or None})
 
