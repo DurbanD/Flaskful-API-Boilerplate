@@ -157,6 +157,10 @@ def update_user(id):
     user_agent = request.headers['User-Agent']
     session = Session.query.filter_by(access_token=access_token).first()
     
+    # Return 401 if the key does not belong to either the user or an admin account
+    if (session.user.id != user.id and session.user.admin == False):
+        return Response(status=401)
+    
     # Check for updated keys. If no update is passed, use current information
     try:
         email = request.json['email']
@@ -195,11 +199,20 @@ def delete_user(id):
     user_agent = request.headers['User-Agent']
     session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
     
-    if session.user.admin == True or (session.user.username == user.username and session.agent == user_agent):
-        db.session.delete(user)
+    # Return 401 if the key does not belong to either the user or an admin account
+    if (session.user.id != user.id and session.user.admin == False):
+        return Response(status=401)
+    # Return 401 if the Access token is expired
+    if (time.time() > session.access_expiration):
+        return Response(status=401)
+    # Return 401 and purge the session if User-Agent differs from the one registered
+    if (session.agent != user_agent):
+        db.session.delete(session)
         db.session.commit()
-        return user_schema.jsonify(user)
-    return Response(status=401)
+        return Response(status=401)
+    db.session.delete(user)
+    db.session.commit()
+    return user_schema.jsonify(user)
 
 ## Auth
 
