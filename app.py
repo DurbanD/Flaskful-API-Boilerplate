@@ -142,8 +142,11 @@ def get_me():
     user_agent = request.headers['User-Agent']
     session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
     user = session.user
-    if user_agent == session.agent and session.access_expiration > time.time():
-        return user_schema.jsonify(user)
+    if session.access_expiration > time.time():
+        if user_agent == session.agent:
+            return user_schema.jsonify(user)
+        if session.user.admin:
+            return user_schema.jsonify(user)
     return Response(status=401)
 
 # Update User
@@ -151,17 +154,24 @@ def get_me():
 def update_user(id):
     user = User.query.get(id)
     
-    email = request.json['email']
-    password = request.json['password']
-    username = request.json['username']
-    
+    email = request.json['email'] or User.email
+    password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest() or User.password
+    username = request.json['username'] or User.username
+    access_token = request.headers['Authorization']
+    user_agent = request.headers['User-Agent']
+    session = Session.query.filter_by(access_token=access_token).first()
     user.email = email
     user.password = password
     user.username = username
-    
-    db.session.commit()
+    if session.access_expiration > time.time():
+        if user_agent == session.agent and user.username == session.user_id:
+            db.session.commit()
+        if session.user.admin:
+            db.session.commit()
+        return user_schema.jsonify(user)
+    else: 
+        return Response(status=401)
 
-    return user_schema.jsonify(user)
 
 # Delete User
 @app.route('/user/<id>', methods=['DELETE'])
@@ -170,6 +180,7 @@ def delete_user(id):
     access_token = request.headers['Authorization']
     user_agent = request.headers['User-Agent']
     session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
+    
     if session.user.admin == True or (session.user.username == user.username and session.agent == user_agent):
         db.session.delete(user)
         db.session.commit()
