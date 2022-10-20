@@ -13,7 +13,7 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | Endpoint | Method | Description | Success Result |
 | --- | --- | --- | --- |
 | `/user/` | POST | Create a user | Tokens |
-| `/user/` | GET | Get a list of all users | User |
+| `/user/` | GET | Get a list of all users. Requires admin access token | User |
 | `/user/<id>` | GET | Get a single user | User list |
 | `/user/me` | GET | Get current user information via access token | User | 
 | `/auth/login` | POST | Login a user via "username" and "password" in the payload body. | Tokens |
