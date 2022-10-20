@@ -14,11 +14,11 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | --- | --- | --- | --- | --- |
 | `/user/` | POST | Create a user | | Tokens |
 | `/user/` | GET | Get a list of all users | Authorization (admin access) | User |
-| `/user/<id>` | GET | Get a single user | Authorization (access); User-Agent | User list |
-| `/user/me` | GET | Get current user information | Authorization (access); User-Agent | User | 
-| `/auth/login` | POST | Login. Req "username" and "password" in payload | User-Agent | Tokens |
-| `/auth/refresh` | GET | Request new tokens | Authorization (refresh); User-Agent | Tokens |
-| `/auth/check` | GET | Check access token status | Authorization (access); User-Agent | `{authStatus: Bool, exp: Float }` |
+| `/user/<id>` | GET | Get a single user | Authorization (access) | User list |
+| `/user/me` | GET | Get current user information | Authorization (access) | User | 
+| `/auth/login` | POST | Login. Req "username" and "password" in payload |  | Tokens |
+| `/auth/refresh` | GET | Request new tokens | Authorization (refresh); | Tokens |
+| `/auth/check` | GET | Check access token status | Authorization (access); | `{authStatus: Bool, exp: Float }` |
 
 All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header.
 
