@@ -19,6 +19,7 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | `/auth/login` | POST | Login. Req "username" and "password" in payload |  | Tokens |
 | `/auth/refresh` | GET | Request new tokens | Authorization (refresh); | Tokens |
 | `/auth/check` | GET | Check access token status | Authorization (access); | `{authStatus: Bool, exp: Float }` |
+| `/auth/logout` | POST | Logout | Authorization (access) | Status code |
 
 All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header.
 
