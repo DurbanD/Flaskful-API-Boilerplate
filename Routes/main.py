@@ -11,7 +11,6 @@ import Routes.User.getMe
 import Routes.User.updateUser
 # Delete User
 import Routes.User.deleteUser
-
 ## Auth
 # Login
 import Routes.Auth.login
