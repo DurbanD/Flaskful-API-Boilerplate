@@ -3,7 +3,7 @@ from Schema.init import session_schema
 from Models.Session import Session
 from Models.User import User
 import time
-from flask import request, jsonify, Response
+from flask import request, Response
 
 @app.route('/auth/refresh', methods=['GET'])
 def refresh():
