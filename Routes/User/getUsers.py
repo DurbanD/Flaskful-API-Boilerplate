@@ -10,6 +10,8 @@ def get_users():
     # Require Authorization header
     try:
         access_token = request.headers['Authorization']
+        offset = request.args.get('offset', 0, type=int)
+        limit = request.args.get('limit', default=5, type=int)
     except:
         return Response(status=401)
     session = Session.query.filter_by(access_token=access_token).first()
@@ -19,5 +21,5 @@ def get_users():
         return Response(status=401)
 
     users = User.query.all()
-    result = users_schema_private.dump(users)
+    result = users_schema_private.dump(users[offset:offset+limit])
     return jsonify(result)
