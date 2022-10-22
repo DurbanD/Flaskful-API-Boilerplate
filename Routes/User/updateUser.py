@@ -1,5 +1,5 @@
 from init import db, app
-from Schema.init import user_schema
+from Schema.UserPrivate import user_schema_private
 from Models.Session import Session
 from Models.User import User
 import hashlib
@@ -46,6 +46,6 @@ def update_user(id):
             db.session.commit()
         elif session.user.admin:
             db.session.commit()
-        return user_schema.jsonify(user)
+        return user_schema_private.jsonify(user)
     else: 
         return Response(status=401)

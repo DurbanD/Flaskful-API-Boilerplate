@@ -1,9 +1,8 @@
 from init import db, app
-from Schema.init import user_schema
+from Schema.UserPrivate import user_schema_private
 from Models.Session import Session
-from Models.User import User
 import time
-from flask import request, jsonify, Response
+from flask import request, Response
 
 # Get Me
 @app.route('/user/me', methods=['GET'])
@@ -17,5 +16,5 @@ def get_me():
     
     if session.access_expiration > time.time():
         if user_agent == session.agent:
-            return user_schema.jsonify(session.user)
+            return user_schema_private.jsonify(session.user)
     return Response(status=401)

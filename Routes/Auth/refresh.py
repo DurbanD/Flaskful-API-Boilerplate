@@ -1,5 +1,5 @@
 from init import db, app
-from Schema.init import session_schema
+from Schema.Session import session_schema
 from Models.Session import Session
 from Models.User import User
 import time

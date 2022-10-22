@@ -1,9 +1,9 @@
 from init import db, app
-from Schema.init import session_schema
+from Schema.Session import session_schema
 from Models.Session import Session
 from Models.User import User
 import hashlib
-from flask import request, jsonify, Response
+from flask import request, Response
 from Tools.emailValidator import validate
 
 @app.route('/user', methods=['POST'])

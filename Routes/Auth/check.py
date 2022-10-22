@@ -23,4 +23,4 @@ def check_auth():
     if time.time() < expiration:
         loginStatus = True
 
-    return jsonify({"auth":loginStatus, "exp":expiration or None})
+    return jsonify( { "auth" : loginStatus, "exp" : expiration or None } )

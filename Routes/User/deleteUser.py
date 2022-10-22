@@ -1,10 +1,9 @@
 from init import db, app
-from Schema.init import user_schema
+from Schema.UserPublic import user_schema_public
 from Models.Session import Session
 from Models.User import User
 import time
-from flask import request, jsonify, Response
-from Tools.emailValidator import validate
+from flask import request, Response
 
 # Delete User
 @app.route('/user/<id>', methods=['DELETE'])
@@ -35,4 +34,4 @@ def delete_user(id):
     # Delete the user
     db.session.delete(user)
     db.session.commit()
-    return user_schema.jsonify(user)
+    return user_schema_public.jsonify(user)
