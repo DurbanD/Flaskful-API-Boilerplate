@@ -1,4 +1,4 @@
-from init import db, app
+from init import app
 from Schema.UserPrivate import users_schema_private
 from Models.Session import Session
 from Models.User import User
@@ -14,7 +14,7 @@ def get_users():
         limit = request.args.get('limit', default=5, type=int)
     except:
         return Response(status=401)
-    session = Session.query.filter_by(access_token=access_token).first()
+    
     # Set minimum and maximum limit and offset values
     if limit > 100:
         limit = 100
@@ -22,12 +22,13 @@ def get_users():
         offset = 0
     
     # Return 401 if accesss token is expired or does not belong to an admin account
+    session = Session.query.filter_by(access_token = access_token).first()
     if session.user.admin == False or time.time() > session.access_expiration:
         return Response(status=401)
 
     # Package the data
     users = User.query.all()
-    result = users_schema_private.dump(users[offset:offset+limit])
+    result = users_schema_private.dump(users[ offset: offset + limit ])
     data = {
         "total": len(users),
         "offset": offset,

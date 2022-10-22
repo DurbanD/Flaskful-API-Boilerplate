@@ -1,10 +1,9 @@
-from types import NoneType
 from init import db, app
 from Schema.Session import session_schema
 from Models.Session import Session
 from Models.User import User
 import hashlib
-from flask import request, jsonify, Response
+from flask import request, Response
 
 # Login
 @app.route('/auth/login', methods=['POST'])

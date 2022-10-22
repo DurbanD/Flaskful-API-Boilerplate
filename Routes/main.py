@@ -20,3 +20,5 @@ import Routes.Auth.refresh
 import Routes.Auth.check
 # Logout
 import Routes.Auth.logout
+# Delete Session
+import Routes.Auth.delete
