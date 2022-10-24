@@ -34,6 +34,9 @@ def update_user(id):
         username = request.json['username']
     except KeyError:
         username = user.username
+    # Return 400 if unable to validate email
+    if validate(email) == False:
+        return Response(status=400)
 
     # Set the New Information
     user.email = email

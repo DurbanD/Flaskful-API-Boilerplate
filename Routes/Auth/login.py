@@ -1,9 +1,11 @@
+import email
 from init import db, app
 from Schema.Session import session_schema
 from Models.Session import Session
 from Models.User import User
 import hashlib
 from flask import request, Response
+from Tools.emailValidator import validate
 
 # Login
 @app.route('/auth/login', methods=['POST'])
@@ -14,7 +16,10 @@ def login():
         agent = request.headers['User-Agent']
     except:
         return Response(status=400)
-    user = db.one_or_404(db.select(User).filter_by(username=username))
+    if validate(username) == True:
+        user = db.one_or_404(db.select(User).filter_by(email=username))
+    else:
+        user = db.one_or_404(db.select(User).filter_by(username=username))
     
     # Check Password
     if hashedPass == user.password:

@@ -16,22 +16,34 @@ class Session(db.Model):
     access_expiration = db.Column(db.Float)
     refresh_token = db.Column(db.String, unique = True)
     refresh_expiration = db.Column(db.Float)
+    temp = db.Column(db.Boolean)
+    refreshInterval = db.Column(db.Integer)
+    accessInterval = db.Column(db.Integer)
     
-    def __init__(self, agent):
-        self.generateTokens()
+    # 2592000 seconds is 30 days
+    # 300 seconds is 5 minutes
+    
+    def __init__(self, agent, refreshExpires = 2592000, accessExpires = 300, temp=False ):
         self.agent = agent
+        self.accessInterval = accessExpires
+        self.refreshInterval = refreshExpires
+        self.temp = temp
+        self.refreshInterval = refreshExpires
+        self.generateTokens()
     def generateTokens(self):
         issued = time.time()
-        sessionToken = secrets.token_hex(256)
-        refreshToken = secrets.token_hex(256)
+        accessToken = secrets.token_hex(256)
+        access_exp = time.time() + self.accessInterval
         
-        session_exp = time.time() + 300
-        # 300 seconds is 5 minutes
-        refresh_exp = time.time() + 259200
-        # 2592000 seconds is 30 days
+        if self.temp == False:
+            refresh_exp = time.time() + self.refreshInterval
+            refreshToken = secrets.token_hex(256)
+        elif self.temp == True:
+            refresh_exp = 0
+            refreshToken = None
         
         self.issued = issued
-        self.access_token  = sessionToken
-        self.access_expiration = session_exp
+        self.access_token  = accessToken
+        self.access_expiration = access_exp
         self.refresh_token = refreshToken
         self.refresh_expiration = refresh_exp
