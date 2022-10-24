@@ -25,8 +25,8 @@ class Session(db.Model):
     
     def __init__(self, agent, refreshExpires = 2592000, accessExpires = 300, temp=False ):
         self.agent = agent
-        self.accessInterval = accessExpires
         self.refreshInterval = refreshExpires
+        self.accessInterval = accessExpires
         self.temp = temp
         self.refreshInterval = refreshExpires
         self.generateTokens()
