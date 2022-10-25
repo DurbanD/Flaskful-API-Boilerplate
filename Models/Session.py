@@ -30,6 +30,7 @@ class Session(db.Model):
         self.temp = temp
         self.refreshInterval = refreshExpires
         self.generateTokens()
+
     def generateTokens(self):
         issued = time.time()
         accessToken = secrets.token_hex(256)
