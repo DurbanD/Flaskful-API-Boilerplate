@@ -22,3 +22,5 @@ import Routes.Auth.check
 import Routes.Auth.logout
 # Delete Session
 import Routes.Auth.delete
+# Recovery Token
+import Routes.Auth.recover

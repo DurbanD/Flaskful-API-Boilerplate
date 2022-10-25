@@ -19,11 +19,14 @@ def get_users():
     if limit > 100:
         limit = 100
     if offset < 0:
-        offset = 0
+        offset = 0    
     
     # Return 401 if accesss token is expired or does not belong to an admin account
     session = Session.query.filter_by(access_token = access_token).first()
     if session.user.admin == False or time.time() > session.access_expiration:
+        return Response(status=401)
+    # Send 401 if access token is temp
+    if session.temp == True:
         return Response(status=401)
 
     # Package the data

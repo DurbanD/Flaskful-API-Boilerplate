@@ -1,4 +1,3 @@
-import email
 from init import db, app
 from Schema.Session import session_schema
 from Models.Session import Session

@@ -35,6 +35,7 @@ class Session(db.Model):
         accessToken = secrets.token_hex(256)
         access_exp = time.time() + self.accessInterval
         
+        # Do not allow refresh if temp
         if self.temp == False:
             refresh_exp = time.time() + self.refreshInterval
             refreshToken = secrets.token_hex(256)
@@ -42,6 +43,7 @@ class Session(db.Model):
             refresh_exp = 0
             refreshToken = None
         
+        # Set Column Values
         self.issued = issued
         self.access_token  = accessToken
         self.access_expiration = access_exp

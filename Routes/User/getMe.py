@@ -14,6 +14,10 @@ def get_me():
         return Response(status=400)
     session = db.one_or_404(db.select(Session).filter_by(access_token=access_token))
     
+    # Send 401 if access token is temp
+    if session.temp == True:
+        return Response(status=401)
+    
     if session.access_expiration > time.time():
         if user_agent == session.agent:
             return user_schema_private.jsonify(session.user)

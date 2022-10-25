@@ -26,19 +26,3 @@ def refresh():
     userSession.generateTokens()
     db.session.commit()
     return session_schema.jsonify(userSession)
-    
-    # # Check to see if the refresh token has expired
-    # if time.time() < userSession.refresh_expiration:
-    #     userSession.generateTokens()
-    #     db.session.commit()
-        
-    #     # If the requesting agent matches the session agent, return session information
-    #     if userSession.agent == agent:
-    #         return session_schema.jsonify(userSession)
-        
-    #     # If the requesting agent does not match the session agent, delete the session to require the agent to log in again.
-    #     else: 
-    #         db.session.delete(userSession)
-    #         db.session.commit()
-    # else:
-    #     return Response(status=401, mimetype='application/json', content_type='application/json')

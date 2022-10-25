@@ -17,23 +17,34 @@ def update_user(id):
         session = Session.query.filter_by(access_token=access_token).first()
     except:
         return Response(status=400)
+    
     # Return 401 if the key does not belong to either the user or an admin account
     if (session.user.id != user.id and session.user.admin == False):
         return Response(status=401)
-    
-    # Check for updated keys. If no update is passed, use current information
-    try:
-        email = request.json['email']
-    except KeyError:
+
+    # Allow only password updates if key is temp
+    if session.temp == True:
         email = user.email
-    try:
-        password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
-    except KeyError:
-        password = user.password
-    try:
-        username = request.json['username']
-    except KeyError:
         username = user.username
+        try:
+            password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+        except:
+            return Response(status=401)
+    else:
+    # Check for updated keys. If no update is passed, use current information
+        try:
+            email = request.json['email']
+        except KeyError:
+            email = user.email
+        try:
+            password = hashlib.sha256(request.json['password'].encode('utf-8')).hexdigest()
+        except KeyError:
+            password = user.password
+        try:
+            username = request.json['username']
+        except KeyError:
+            username = user.username
+
     # Return 400 if unable to validate email
     if validate(email) == False:
         return Response(status=400)

@@ -22,12 +22,14 @@ def delete_user(id):
     # Return 401 if the Access token is expired
     if (time.time() > session.access_expiration):
         return Response(status=401)
+    # Send 401 if access token is temp
+    if session.temp == True:
+        return Response(status=401)
     # Return 401 and purge the session if User-Agent differs from the one registered
     if (session.agent != user_agent):
         db.session.delete(session)
         db.session.commit()
         return Response(status=401)
-    
     # Delete all user sessions
     for session in user.auth:
         db.session.delete(session)

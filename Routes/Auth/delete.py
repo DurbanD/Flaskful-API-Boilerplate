@@ -17,8 +17,10 @@ def delete_session(id):
     session = Session.query.filter_by(access_token=accessToken).first()
     if (type(targetSession) == NoneType or type(session) == NoneType):
         return Response(status=404)
-    # session = db.one_or_404(db.select(Session).filter_by(access_token=accessToken))
     
+    # Send 401 if access token is temp
+    if session.temp == True:
+        return Response(status=401)
     if targetSession.user.id != session.user.id and session.user.admin == False:
         return Response(status=401)
     
@@ -27,5 +29,6 @@ def delete_session(id):
         return Response(status=401)
     db.session.delete(targetSession)
     db.session.commit()
+    
     return Response(status=200)
     

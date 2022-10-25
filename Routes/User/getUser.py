@@ -22,6 +22,9 @@ def get_user(id):
     # Return public if user session is expired
     if userSession.access_expiration < time.time():
         return user_schema_public.jsonify(user)
+    # Return public for temp tokens
+    if userSession.temp == True:
+        return user_schema_public.jsonify(user)
     # Return public if user agent differs
     if userSession.agent != user_agent:
         return user_schema_public.jsonify(user)
