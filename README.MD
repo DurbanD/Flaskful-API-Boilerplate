@@ -22,6 +22,7 @@ This is a template for use in creating a Flask based RESTful API with user accou
 | `/auth/check` | GET | Check access token status | Authorization (access); | `{authStatus: Bool, exp: Float }` |
 | `/auth/logout` | POST | Logout | Authorization (access) | Status code |
 | `/auth/<id>` | DELETE | Delete auth session | Authorization (access) | Status Code |
+| `/auth/recover` | POST | Generate Temporary Token and Send Email | Username or Email | Temp Token |
 
 All authorization tokens are passed to the server in the "Authorization" header. All requests require a Content-Type "application/json" header.
 
