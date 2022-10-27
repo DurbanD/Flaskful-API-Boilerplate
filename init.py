@@ -19,5 +19,6 @@ ma = Marshmallow(app)
 
 # Get SSL Key Paths
 # YOU MUST GENERATE A KEY AND A CERT TO USE THIS
+# RUN Scripts/keygen.sh TO GENERATE THE KEY AND CERT
 serverCert = os.path.join(basedir, 'server.crt')
 serverKey = os.path.join(basedir, 'server.key')
