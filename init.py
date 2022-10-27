@@ -16,3 +16,8 @@ db = SQLAlchemy(app)
 
 #Init Marshmallow
 ma = Marshmallow(app)
+
+# Get SSL Key Paths
+# YOU MUST GENERATE A KEY AND A CERT TO USE THIS
+serverCert = os.path.join(basedir, 'server.crt')
+serverKey = os.path.join(basedir, 'server.key')

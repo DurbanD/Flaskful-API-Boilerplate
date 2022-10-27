@@ -6,7 +6,6 @@ WORKDIR /app
 
 COPY . .
 
-
 RUN ufw allow 5000
 
 RUN pip3 install -r requirements.txt
