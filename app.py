@@ -8,4 +8,4 @@ if __name__ == '__main__':
         db.drop_all()
         db.create_all()
         create()
-        app.run(host="0.0.0.0", port=8000, debug=False, ssl_context=(serverCert, serverKey))
+        app.run(host="0.0.0.0", port=8000, debug=True, ssl_context=(serverCert, serverKey))
